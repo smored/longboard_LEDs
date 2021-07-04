@@ -19,6 +19,8 @@
 #define HEADLIGHT_BEGIN 20
 #define HEADLIGHT_END 40
 
+#define INTERRUPT_PIN 4
+
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Argument 1 = Number of pixels in NeoPixel strip
@@ -34,8 +36,9 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // setup() function -- runs once at startup --------------------------------
 
 void setup() {
-  attachInterrupt(digitalPinToInterrupt(10), brakeLightsHigh, RISING);
-  attachInterrupt(digitalPinToInterrupt(10), brakeLightsLow, FALLING);
+  pinMode(INTERRUPT_PIN, INPUT_PULLDOWN);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, RISING);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsLow, FALLING);
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
   strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
@@ -137,19 +140,13 @@ void brakeLights(float brightness) {
   strip.show();
 }
 
-// Debounce will verify input signal incase we decide to use physical buttons - TODO: Test this function
-//bool debounce(int pin, bool state) {
-//  delay(DEBOUNCE_DELAY);
-//  return(digitalRead(pin)==state);
-//}
+
 
 void brakeLightsHigh() {
-  //if (!debounce(10, 1)) return();
   brakeLights(1.0f);  
 }
 
 void brakeLightsLow() {
-  //if (!debounce(10, 0)) return();
   brakeLights(0.1f);
 }
 
@@ -166,7 +163,7 @@ void underglowTracer(float brightness) {
 
   clearUnderglowLights();
   
-  for (int i=0; i>8; i++) {
+  for (int i=0; i<8; i++) {
     float brightnessAdjust = i/8.0f;
   
     if (isUnderglowOutOfPersistentLights(colour1Target+i))
