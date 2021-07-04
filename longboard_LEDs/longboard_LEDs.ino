@@ -21,6 +21,9 @@
 
 #define INTERRUPT_PIN 4
 
+#define HIGHVAL 1.0f
+#define LOWVAL 0.1f
+
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Argument 1 = Number of pixels in NeoPixel strip
@@ -36,14 +39,14 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // setup() function -- runs once at startup --------------------------------
 
 void setup() {
+  interrupts();
   pinMode(INTERRUPT_PIN, INPUT_PULLDOWN);
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, RISING);
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsLow, FALLING);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLights, RISING);
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
   strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
   headLights(0.1f);
-  brakeLights(0.1f);
+  brakeLights();
 }
 
 
@@ -132,22 +135,22 @@ void theaterChaseRainbow(int wait) {
   }
 }
 
-// Fairly certain "brightness" is a keyword from the neopixel library
-void brakeLights(float brightness) {
+
+void brakeLights() {
+  float brightness;
+  static bool on;
+  on ^= 1;
+  
+  if (on) {
+    brightness = HIGHVAL;
+  } else {
+    brightness = LOWVAL;
+  }
+  
   for(int i=BRAKE_BEGIN; i<BRAKE_END; i++) {
     strip.setPixelColor(i, strip.Color(255*brightness, 0, 0));
   }
   strip.show();
-}
-
-
-
-void brakeLightsHigh() {
-  brakeLights(1.0f);  
-}
-
-void brakeLightsLow() {
-  brakeLights(0.1f);
 }
 
 void headLights(float brightness) {
