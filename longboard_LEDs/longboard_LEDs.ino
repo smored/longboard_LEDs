@@ -1,4 +1,5 @@
 #include <Adafruit_NeoPixel.h>
+#include <ButtonDebounce.h>
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
@@ -38,15 +39,17 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 // setup() function -- runs once at startup --------------------------------
 
+ButtonDebounce button(INTERRUPT_PIN, 25);
+
 void setup() {
   interrupts();
-  pinMode(INTERRUPT_PIN, INPUT_PULLDOWN);
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLights, RISING);
+  pinMode(INTERRUPT_PIN, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, FALLING);
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
-  strip.setBrightness(255); // Set BRIGHTNESS to about 1/5 (max = 255)
-  headLights(0.1f);
-  brakeLights();
+  strip.setBrightness(255); // Set BRIGHTNESS max lmao
+  headLights(LOWVAL);
+  brakeLights(LOWVAL);
 }
 
 
@@ -136,21 +139,35 @@ void theaterChaseRainbow(int wait) {
 }
 
 
-void brakeLights() {
-  float brightness;
-  static bool on;
-  on ^= 1;
-  
-  if (on) {
-    brightness = HIGHVAL;
-  } else {
-    brightness = LOWVAL;
-  }
-  
+void brakeLights(float brightness) { 
   for(int i=BRAKE_BEGIN; i<BRAKE_END; i++) {
     strip.setPixelColor(i, strip.Color(255*brightness, 0, 0));
   }
   strip.show();
+}
+
+void brakeLightsHigh() {
+  button.update();
+  if (button.state() == LOW){
+    noInterrupts();
+    brakeLights(HIGHVAL);
+  } else {
+    return;
+  }
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsLow, RISING);
+  interrupts();
+}
+
+void brakeLightsLow() {
+  button.update();
+  if (button.state() == HIGH){
+    noInterrupts();
+    brakeLights(LOWVAL);
+  } else {
+    return;
+  }
+  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, FALLING);
+  interrupts();
 }
 
 void headLights(float brightness) {
