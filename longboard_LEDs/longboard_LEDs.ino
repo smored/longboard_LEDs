@@ -12,6 +12,7 @@
 
 // Wait time in milliseconds
 #define WAIT_TIME 25
+#define DEBOUNCE_TIME 20
 
 #define BRAKE_BEGIN 50
 #define BRAKE_END 70
@@ -128,6 +129,7 @@ void theaterChaseRainbow(int wait) {
   }
 }
 
+// Fairly certain "brightness" is a keyword from the neopixel library
 void brakeLights(float brightness) {
   for(int i=BRAKE_BEGIN; i<BRAKE_END; i++) {
     strip.setPixelColor(i, strip.Color(255*brightness, 0, 0));
@@ -135,11 +137,19 @@ void brakeLights(float brightness) {
   strip.show();
 }
 
+// Debounce will verify input signal incase we decide to use physical buttons - TODO: Test this function
+//bool debounce(int pin, bool state) {
+//  delay(DEBOUNCE_DELAY);
+//  return(digitalRead(pin)==state);
+//}
+
 void brakeLightsHigh() {
+  //if (!debounce(10, 1)) return();
   brakeLights(1.0f);  
 }
 
 void brakeLightsLow() {
+  //if (!debounce(10, 0)) return();
   brakeLights(0.1f);
 }
 
@@ -163,7 +173,7 @@ void underglowTracer(float brightness) {
       strip.setPixelColor((colour1Target+i)%LED_COUNT, strip.Color(0,0,255*brightness*brightnessAdjust));
 
     if (isUnderglowOutOfPersistentLights(colour2Target-i))
-      strip.setPixelColor((colour1Target-i)%LED_COUNT, strip.Color(0,0,255*brightness*brightnessAdjust));
+      strip.setPixelColor((colour2Target-i)%LED_COUNT, strip.Color(0,0,255*brightness*brightnessAdjust));
   }
   colour1Target--;
   colour2Target++;
@@ -192,6 +202,7 @@ void clearUnderglowLights() {
   }
 }
 
+// Returns true or false depending on if we are allowed to write to the LED -
 bool isUnderglowOutOfPersistentLights(int led) {
   return (led < BRAKE_BEGIN && led > BRAKE_END) || (led < HEADLIGHT_BEGIN && led > HEADLIGHT_END);
 }
