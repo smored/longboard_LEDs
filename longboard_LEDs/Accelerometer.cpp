@@ -51,7 +51,7 @@ Acc3D iicUpdate(){
   // Serial.print(" | AcZ = "); Serial.print(AcZ);
   // Serial.print(" | AccVectorSum = "); Serial.println(Acc3D_Board.AccVectorSum);
   
-  return Acc3D;
+  return Acc3D_Board;
 
   delay(333);
 }
