@@ -1,7 +1,5 @@
 #include "Accelerometer.h"
 #include <Wire.h>
-#define BASEVALUE 16384.0d
-#define GRAVITY 9.81d
 
 const int MPU_addr=0x68;  // I2C address of the MPU-6050
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
@@ -44,9 +42,9 @@ void iicTransmission(){
   // Takes absolute magnitude of all 3 axes
   Acc3D_Board.AccVectorSum = sqrt((AcX*AcX)+(AcY*AcY)+(AcZ*AcZ));
   // Shows direction of acceleration (0 is negative direction, 1 is positive)
-  Acc3D_Board.dirX == AcX>0; 
-  Acc3D_Board.dirY == AcY>0;
-  Acc3D_Board.dirZ == AcZ>0;
+  Acc3D_Board.dirX = AcX>0; 
+  Acc3D_Board.dirY = AcY>0;
+  Acc3D_Board.dirZ = AcZ>0;
 
   Serial.print("AcX = "); Serial.print(AcX);
   Serial.print(" | AcY = "); Serial.print(AcY);
