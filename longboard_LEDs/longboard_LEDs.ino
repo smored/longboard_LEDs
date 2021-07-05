@@ -144,7 +144,7 @@ void theaterChaseRainbow(int wait) {
 
 
 void brakeLights(float brightness) { 
-  for(int i=BRAKE_BEGIN; i<BRAKE_END; i++) {
+  for(int i = BRAKE_BEGIN; i < BRAKE_END; i++) {
     strip.setPixelColor(i, strip.Color(255*brightness, 0, 0));
   }
   strip.show();
@@ -175,7 +175,7 @@ void brakeLightsLow() {
 }
 
 void headLights(float brightness) {
-  for (int i=HEADLIGHT_BEGIN; i<HEADLIGHT_END; i++) {
+  for (int i = HEADLIGHT_BEGIN; i < HEADLIGHT_END; i++) {
     strip.setPixelColor(i, strip.Color(255*brightness, 255*brightness, 255*brightness));
   }
   strip.show();
@@ -187,14 +187,14 @@ void underglowTracer(float brightness) {
 
   clearUnderglowLights();
   
-  for (int i=0; i<UNDERGLOW_TRAIL_LENGTH; i++) {
-    float brightnessAdjust = i/(float)UNDERGLOW_TRAIL_LENGTH;
+  for (int i=0; i < UNDERGLOW_TRAIL_LENGTH; i++) {
+    float brightnessAdjust = i / (float)UNDERGLOW_TRAIL_LENGTH;
   
-    if (!isLightInPersistentLight(colour1Target-i) && colour1Target-i%LED_COUNT > UNDERGLOW_START-LED_COUNT/2-1 && colour1Target-i%LED_COUNT < UNDERGLOW_START+1)
-      strip.setPixelColor((colour1Target-i)%LED_COUNT, strip.Color(0,0,255*brightness*brightnessAdjust));
+    if (!isLightInPersistentLight(colour1Target-i) && colour1Target-i % LED_COUNT >= UNDERGLOW_START-LED_COUNT/2 && colour1Target-i % LED_COUNT <= UNDERGLOW_START)
+      strip.setPixelColor((colour1Target-i)%LED_COUNT, strip.Color(0, 0, 255*brightness*brightnessAdjust));
 
-    if (!isLightInPersistentLight(colour2Target+i) && colour2Target+i-LED_COUNT < UNDERGLOW_START-LED_COUNT/2+1 && colour2Target+i>UNDERGLOW_START-1)
-      strip.setPixelColor((colour2Target+i)%LED_COUNT, strip.Color(0,0,255*brightness*brightnessAdjust));
+    if (!isLightInPersistentLight(colour2Target+i) && colour2Target+i - LED_COUNT <= UNDERGLOW_START-LED_COUNT/2 && colour2Target+i >= UNDERGLOW_START)
+      strip.setPixelColor((colour2Target+i)%LED_COUNT, strip.Color(0, 0, 255*brightness*brightnessAdjust));
   }
   colour1Target--;
   colour2Target++;
@@ -205,10 +205,10 @@ void underglowTracer(float brightness) {
   if (colour2Target < 0)
     colour2Target += LED_COUNT;
 
-  if (colour1Target%LED_COUNT==UNDERGLOW_START-LED_COUNT/2-1)
+  if (colour1Target % LED_COUNT < UNDERGLOW_START-LED_COUNT/2)
     colour1Target = UNDERGLOW_START+UNDERGLOW_TRAIL_LENGTH;
 
-  if (colour2Target%LED_COUNT==UNDERGLOW_START-LED_COUNT/2+1)
+  if (colour2Target - LED_COUNT > UNDERGLOW_START-LED_COUNT/2)
     colour2Target = UNDERGLOW_START-UNDERGLOW_TRAIL_LENGTH;
     
   strip.show();
@@ -217,7 +217,7 @@ void underglowTracer(float brightness) {
 
 //does not strip.show() so there's no flicker on effects, does not affect brake lights or headlights
 void clearUnderglowLights() {
-  for (int i=0; i<LED_COUNT; i++) {
+  for (int i=0; i < LED_COUNT; i++) {
     if (!isLightInPersistentLight(i))
       strip.setPixelColor(i, 0, 0, 0);
   }
