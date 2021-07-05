@@ -9,7 +9,7 @@ void iicInit();
 Call this function directly before 
 you want to pull data from Acc3D
 -------------------------------------*/
-void iicUpdate();
+Acc3D iicUpdate();
 
 /* Acc3D ------------------------------
 This object contains 7 variables:

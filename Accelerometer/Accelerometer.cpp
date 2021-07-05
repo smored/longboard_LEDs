@@ -27,7 +27,7 @@ void iicInit(){
   Serial.begin(9600);
 }
 
-void iicTransmission(){
+Acc3D iicUpdate(){
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
   Wire.endTransmission(false);
@@ -46,10 +46,12 @@ void iicTransmission(){
   Acc3D_Board.dirY = AcY>0;
   Acc3D_Board.dirZ = AcZ>0;
 
-  Serial.print("AcX = "); Serial.print(AcX);
-  Serial.print(" | AcY = "); Serial.print(AcY);
-  Serial.print(" | AcZ = "); Serial.print(AcZ);
-  Serial.print(" | AccVectorSum = "); Serial.println(Acc3D_Board.AccVectorSum);
+  // Serial.print("AcX = "); Serial.print(AcX);
+  // Serial.print(" | AcY = "); Serial.print(AcY);
+  // Serial.print(" | AcZ = "); Serial.print(AcZ);
+  // Serial.print(" | AccVectorSum = "); Serial.println(Acc3D_Board.AccVectorSum);
   
+  return Acc3D;
+
   delay(333);
 }
