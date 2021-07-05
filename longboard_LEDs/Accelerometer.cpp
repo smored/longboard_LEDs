@@ -3,13 +3,6 @@
 
 const int MPU_addr=0x68;  // I2C address of the MPU-6050
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
-
-struct Acc3D {
-  double AccVectorSum;
-  int16_t AcX, AcY, AcZ;
-  bool dirX, dirY, dirZ;
-};
-
 Acc3D Acc3D_Board;
 
 void iicInit(){

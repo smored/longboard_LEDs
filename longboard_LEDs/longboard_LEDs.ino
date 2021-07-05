@@ -44,8 +44,10 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // setup() function -- runs once at startup --------------------------------
 
 ButtonDebounce button(INTERRUPT_PIN, 25);
+Acc3D Acc3D_Board1;
 
 void setup() {
+  iicInit();
   interrupts();
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, FALLING);
@@ -61,6 +63,8 @@ void setup() {
 
 void loop() {
   underglowTracer(0.1f);
+  Acc3D_Board1 = iicUpdate();
+  Serial.println(Acc3D_Board1.AccVectorSum);
 }
 
 
