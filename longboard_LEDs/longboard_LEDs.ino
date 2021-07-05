@@ -1,5 +1,6 @@
 #include <Adafruit_NeoPixel.h>
 #include <ButtonDebounce.h>
+#include "Accelerometer.h"
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
@@ -17,12 +18,12 @@
 
 #define BRAKE_BEGIN 25
 #define BRAKE_END 45
-#define HEADLIGHT_BEGIN 100
-#define HEADLIGHT_END 120
+#define HEADLIGHT_BEGIN 93
+#define HEADLIGHT_END 113
 
 #define INTERRUPT_PIN 4
 
-#define UNDERGLOW_START 80
+#define UNDERGLOW_START 95
 #define UNDERGLOW_TRAIL_LENGTH 16
 
 #define HIGHVAL 1.0f
