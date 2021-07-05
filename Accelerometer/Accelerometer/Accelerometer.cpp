@@ -1,4 +1,5 @@
-#include<Wire.h>
+#include <Accelerometer.h>
+#include <Wire.h>
 #define BASEVALUE 16384.0d
 #define GRAVITY 9.81d
 
@@ -13,7 +14,7 @@ struct Acc3D {
 
 Acc3D Acc3D_Board;
 
-void setup(){
+void iicInit(){
   pinMode(13, OUTPUT);
   Wire.begin();
   Wire.beginTransmission(MPU_addr);
@@ -28,7 +29,7 @@ void setup(){
   Serial.begin(9600);
 }
 
-void loop(){
+void iicTransmission(){
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
   Wire.endTransmission(false);
