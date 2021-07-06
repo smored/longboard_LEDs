@@ -198,6 +198,14 @@ void brakeLightsLow() {
   } else {
     return;
   }
+
+    // Check if the signal went high during the noInterrupt period
+  if (!digitalRead(INTERRUPT_PIN)) {
+    brakeLights(HIGHVAL); // Edge was missed, so manually simulate it
+    quickInterrupt(1); 
+    return;
+  }
+  
   quickInterrupt(0); // Set interrupt to check for a falling edge
 }
 

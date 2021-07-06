@@ -34,6 +34,9 @@ This MUST be called after iicInit()
 -------------------------------------*/
 void intInit();
 
-// probably dont need this
-// but it is a thing just in case
-//bool readIntStatus();
+/* readIntStatus() --------------------
+This function reads the interrupt register
+and returns whether there the interrupt
+flag is set or not in a boolean
+-------------------------------------*/
+bool readIntStatus();

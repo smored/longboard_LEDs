@@ -1,6 +1,9 @@
 #include "Accelerometer.h"
 #include <Wire.h>
 
+// bitmask used in readIntStatus
+#define STATUS_MASK 0x1
+
 const int MPU_addr=0x68;  // I2C address of the MPU-6050
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 Acc3D Acc3D_Board;
@@ -59,7 +62,16 @@ void intInit() {
   Wire.write(0x37); // Now we write to the INT_PIN_CFG to flavour our interrupt 
   // We want the following:
   // active high, push-pull, INT held high until clear, 
-  // status bit clear on read operation, and disable FSYNC
-  Wire.write(0x30);  // This means: 0011 0000
+  // status bit clear on INT_STATUS read, and disable FSYNC
+  Wire.write(0x20);  // This means: 0010 0000
   Wire.endTransmission(true);
+}
+
+bool readIntStatus() {
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x3A);  // Tell it to look at this address
+  Wire.endTransmission(false);
+  Wire.requestFrom(MPU_addr,1,true);  // request 1 register
+  
+  return(STATUS_MASK & Wire.read()); //Read the contents and discard unimportant values
 }
