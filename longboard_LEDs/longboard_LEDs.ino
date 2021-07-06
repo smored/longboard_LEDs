@@ -1,3 +1,4 @@
+// I am WOKE
 #include <Adafruit_NeoPixel.h>
 #include <ButtonDebounce.h>
 #include "Accelerometer.h"
@@ -44,8 +45,11 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // setup() function -- runs once at startup --------------------------------
 
 ButtonDebounce button(INTERRUPT_PIN, 25);
+Acc3D Acc3D_Board1;
 
 void setup() {
+  iicInit();
+  intInit();
   interrupts();
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, FALLING);
@@ -61,8 +65,12 @@ void setup() {
 
 void loop() {
   underglowTracer(0.1f);
+  Acc3D_Board1 = iicUpdate();
+  Serial.println(Acc3D_Board1.AccVectorSum);
 }
 
+// Do we need this garbage or can i obliterate it
+// alternatively we could put them in the effects library
 
 // Some functions of our own for creating animated effects -----------------
 
@@ -143,6 +151,11 @@ void theaterChaseRainbow(int wait) {
 }
 
 
+/* brakeLights -------------------------------------------------------
+ *  This function can be manually called but is automatically called 
+ *  by the respective high and low brakeLight functions.
+ *  It takes a float ranging from 100% to 0% for brightness
+ * -----------------------------------------------------------------*/
 void brakeLights(float brightness) { 
   for(int i = BRAKE_BEGIN; i < BRAKE_END; i++) {
     strip.setPixelColor(i, strip.Color(255*brightness, 0, 0));
@@ -150,18 +163,33 @@ void brakeLights(float brightness) {
   strip.show();
 }
 
+/* brakeLightsHigh ---------------------------------------------------
+ *  This function is called by the ISR and checks to verify the signal, 
+ *  then calls the brakeLights function
+ * -----------------------------------------------------------------*/
 void brakeLightsHigh() {
   button.update();
-  if (button.state() == LOW){
-    noInterrupts();
+  if (button.state() == LOW){ // Checks button debounce
+    noInterrupts(); // Turns off interrupts while lights are being changed
     brakeLights(HIGHVAL);
   } else {
     return;
   }
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsLow, RISING);
-  interrupts();
+
+  // Check if the signal went high during the noInterrupt period
+  if (digitalRead(INTERRUPT_PIN)) {
+    brakeLights(LOWVAL); // Edge was missed, so manually simulate it
+    quickInterrupt(0); 
+    return;
+  }
+  
+  quickInterrupt(1); // Set interrupt to check for a rising edge
 }
 
+/* brakeLightsLow ---------------------------------------------------
+ *  This function is called by the ISR and checks to verify the signal, 
+ *  then calls the brakeLights function
+ * -----------------------------------------------------------------*/
 void brakeLightsLow() {
   button.update();
   if (button.state() == HIGH){
@@ -170,10 +198,32 @@ void brakeLightsLow() {
   } else {
     return;
   }
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, FALLING);
+
+    // Check if the signal went high during the noInterrupt period
+  if (!digitalRead(INTERRUPT_PIN)) {
+    brakeLights(HIGHVAL); // Edge was missed, so manually simulate it
+    quickInterrupt(1); 
+    return;
+  }
+  
+  quickInterrupt(0); // Set interrupt to check for a falling edge
+}
+
+/* quickInterrupt ----------------------------------------------------
+ *  This function is just to make writing interrupts faster and cleaner
+ * -----------------------------------------------------------------*/
+void quickInterrupt(bool rising) {
+  if (rising) {
+    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsLow, RISING);
+  } else {
+    attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, FALLING);
+  }
   interrupts();
 }
 
+/* headLights --------------------------------------------------------
+ *  Same as brakeLights() but white
+ * -----------------------------------------------------------------*/
 void headLights(float brightness) {
   for (int i = HEADLIGHT_BEGIN; i < HEADLIGHT_END; i++) {
     strip.setPixelColor(i, strip.Color(255*brightness, 255*brightness, 255*brightness));
@@ -181,6 +231,9 @@ void headLights(float brightness) {
   strip.show();
 }
 
+/* underglowTracer ---------------------------------------------------
+ *  ......
+ * -----------------------------------------------------------------*/
 void underglowTracer(float brightness) {
   static int colour1Target = UNDERGLOW_START+UNDERGLOW_TRAIL_LENGTH;
   static int colour2Target = UNDERGLOW_START-UNDERGLOW_TRAIL_LENGTH;
@@ -215,7 +268,10 @@ void underglowTracer(float brightness) {
   delay(WAIT_TIME);
 }
 
-//does not strip.show() so there's no flicker on effects, does not affect brake lights or headlights
+/* clearUnderglowLights ----------------------------------------------
+ *  does not strip.show() so there's no flicker on effects, does 
+ *  not affect brake lights or headlights
+ * -----------------------------------------------------------------*/
 void clearUnderglowLights() {
   for (int i=0; i < LED_COUNT; i++) {
     if (!isLightInPersistentLight(i))
@@ -223,7 +279,9 @@ void clearUnderglowLights() {
   }
 }
 
-// Returns true or false depending on if we are allowed to write to the LED -
+/* isLightInPersistentLight ------------------------------------------
+ *  Returns true or false depending on if we are allowed to write to the LED
+ * -----------------------------------------------------------------*/
 bool isLightInPersistentLight(int led) {
   led %= LED_COUNT;
   return (led >= BRAKE_BEGIN && led < BRAKE_END) || (led >= HEADLIGHT_BEGIN && led < HEADLIGHT_END);

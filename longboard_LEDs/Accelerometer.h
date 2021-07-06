@@ -1,3 +1,19 @@
+#include <cstdint>
+
+/* Acc3D ------------------------------
+This object contains 7 variables:
+  double AccVectorSum;
+  int16_t AcX, AcY, AcZ;
+  bool dirX, dirY, dirZ;
+-------------------------------------*/
+struct Acc3D {
+  double AccVectorSum;
+  int16_t AcX, AcY, AcZ;
+  bool dirX, dirY, dirZ;
+};
+
+
+
 /* iicInit() --------------------------
 This function initializes the iic 
 communication with the accelerometer.
@@ -11,10 +27,16 @@ you want to pull data from Acc3D
 -------------------------------------*/
 Acc3D iicUpdate();
 
-/* Acc3D ------------------------------
-This object contains 7 variables:
-  double AccVectorSum;
-  int16_t AcX, AcY, AcZ;
-  bool dirX, dirY, dirZ;
+/* intInit() --------------------------
+This function initializes the data-ready
+interrupt on the accelerometer.
+This MUST be called after iicInit()
 -------------------------------------*/
-struct Acc3D;
+void intInit();
+
+/* readIntStatus() --------------------
+This function reads the interrupt register
+and returns whether there the interrupt
+flag is set or not in a boolean
+-------------------------------------*/
+bool readIntStatus();
