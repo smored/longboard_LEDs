@@ -49,6 +49,7 @@ Acc3D Acc3D_Board1;
 
 void setup() {
   iicInit();
+  intInit();
   interrupts();
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, FALLING);

@@ -48,3 +48,18 @@ Acc3D iicUpdate(){
 
   delay(333);
 }
+
+void intInit() {
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x38); // Write to INT_ENABLE register 
+  Wire.write(0x1);  // 0000 0001 = DATA_READY_EN
+  Wire.endTransmission(true);
+
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x37); // Now we write to the INT_PIN_CFG to flavour our interrupt 
+  // We want the following:
+  // active high, push-pull, INT held high until clear, 
+  // status bit clear on read operation, and disable FSYNC
+  Wire.write(0x30);  // This means: 0011 0000
+  Wire.endTransmission(true);
+}
