@@ -1,11 +1,15 @@
 #include "Accelerometer.h"
 #include <Wire.h>
 
-// bitmask used in readIntStatus
-#define STATUS_MASK 0x1
-
 const int MPU_addr=0x68;  // I2C address of the MPU-6050
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
+
+struct Acc3D {
+  double AccVectorSum;
+  int16_t AcX, AcY, AcZ;
+  bool dirX, dirY, dirZ;
+};
+
 Acc3D Acc3D_Board;
 
 void iicInit(){
@@ -51,6 +55,7 @@ Acc3D iicUpdate(){
 
   delay(333);
 }
+<<<<<<< HEAD
 
 void intInit() {
   Wire.beginTransmission(MPU_addr);
@@ -75,3 +80,5 @@ bool readIntStatus() {
   
   return(STATUS_MASK & Wire.read()); //Read the contents and discard unimportant values
 }
+=======
+>>>>>>> parent of 114f1ae (Merge branch 'main' of https://github.com/smored/longboard_LEDs)
