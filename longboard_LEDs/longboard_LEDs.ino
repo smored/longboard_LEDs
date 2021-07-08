@@ -67,7 +67,10 @@ void setup() {
 // loop() function -- runs repeatedly as long as board is on ---------------
 
 void loop() {
-  underglowTracer(0.1f);
+  if (ledOffTime - ledWaitTime >= 0) {
+    ledOffTime = 0;
+    underglowTracer(0.1f);
+  }
   Acc3D_Board1 = iicUpdate();
   Serial.println(Acc3D_Board1.AccVectorSum);
 }
@@ -238,9 +241,6 @@ void headLights(float brightness) {
  *  ......
  * -----------------------------------------------------------------*/
 void underglowTracer(float brightness) {
-  if (ledOffTime - ledWaitTime < 0) return;
-  else { ledOffTime = 0; }
-  
   static int colour1Target = UNDERGLOW_START+UNDERGLOW_TRAIL_LENGTH;
   static int colour2Target = UNDERGLOW_START-UNDERGLOW_TRAIL_LENGTH;
 
