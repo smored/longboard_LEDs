@@ -1,3 +1,6 @@
+#ifndef ACCELEROMETER_H
+#define ACCELEROMETER_H
+
 #include <cstdint>
 
 /* Acc3D ------------------------------
@@ -40,3 +43,5 @@ and returns whether there the interrupt
 flag is set or not in a boolean
 -------------------------------------*/
 bool readIntStatus();
+
+#endif //ACCELEROMETER_H
