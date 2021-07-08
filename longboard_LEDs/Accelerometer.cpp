@@ -61,9 +61,9 @@ void intInit() {
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x37); // Now we write to the INT_PIN_CFG to flavour our interrupt 
   // We want the following:
-  // active high, push-pull, INT held high until clear, 
+  // active-low, push-pull, INT held high until clear, 
   // status bit clear on INT_STATUS read, and disable FSYNC
-  Wire.write(0x20);  // This means: 0010 0000
+  Wire.write(0xA0);  // This means: 1010 0000
   Wire.endTransmission(true);
 }
 
