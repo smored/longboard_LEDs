@@ -1,6 +1,7 @@
 // I am WOKE
 #include <Adafruit_NeoPixel.h>
 #include <ButtonDebounce.h>
+#include <elapsedMillis.h>
 #include "Accelerometer.h"
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
@@ -50,6 +51,8 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 ButtonDebounce button(INTERRUPT_PIN, 25);
 Acc3D Acc3D_Board1;
+elapsedMillis ledOffTime;
+unsigned int ledWaitTime;
 
 void setup() {
   accInit();
@@ -78,8 +81,6 @@ void loop() {
     ledOffTime = 0;
     underglowTracer(0.1f);
   }
-  Acc3D_Board1 = iicUpdate();
-  Serial.println(Acc3D_Board1.AccVectorSum);
 }
 
 
