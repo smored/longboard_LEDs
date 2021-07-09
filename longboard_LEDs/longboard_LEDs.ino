@@ -1,6 +1,7 @@
 // I am WOKE
 #include <Adafruit_NeoPixel.h>
 #include <ButtonDebounce.h>
+#include <elapsedMillis.h>
 #include "Accelerometer.h"
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
@@ -14,7 +15,6 @@
 #define LED_COUNT 120
 
 // Wait time in milliseconds
-#define WAIT_TIME 25
 #define DEBOUNCE_TIME 20
 
 #define BRAKE_BEGIN 25
@@ -29,6 +29,9 @@
 
 #define HIGHVAL 1.0f
 #define LOWVAL 0.1f
+
+elapsedMillis ledOffTime;
+unsigned int ledWaitTime;
 
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -72,6 +75,12 @@ void loop() {
 //  } else { 
 //    Serial.print("Data not ready. Time: "); Serial.println(millis());
 //  }
+  if (ledOffTime - ledWaitTime >= 0) {
+    ledOffTime = 0;
+    underglowTracer(0.1f);
+  }
+  Acc3D_Board1 = iicUpdate();
+  Serial.println(Acc3D_Board1.AccVectorSum);
 }
 
 
@@ -288,7 +297,6 @@ void underglowTracer(float brightness) {
     colour2Target = UNDERGLOW_START-UNDERGLOW_TRAIL_LENGTH;
     
   strip.show();
-  delay(WAIT_TIME);
 }
 
 /* clearUnderglowLights ----------------------------------------------
