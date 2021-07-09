@@ -8,7 +8,7 @@ const int MPU_addr=0x68;  // I2C address of the MPU-6050
 int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 Acc3D Acc3D_Board;
 
-void iicInit(){
+void accInit(){
   pinMode(13, OUTPUT);
   Wire.begin();
   Wire.beginTransmission(MPU_addr);
@@ -23,7 +23,7 @@ void iicInit(){
   Serial.begin(9600);
 }
 
-Acc3D iicUpdate(){
+Acc3D accUpdate(){
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
   Wire.endTransmission(false);
@@ -48,11 +48,9 @@ Acc3D iicUpdate(){
   // Serial.print(" | AccVectorSum = "); Serial.println(Acc3D_Board.AccVectorSum);
   
   return Acc3D_Board;
-
-  delay(333);
 }
 
-void intInit() {
+void accIntInit() {
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x38); // Write to INT_ENABLE register 
   Wire.write(0x1);  // 0000 0001 = DATA_READY_EN
@@ -67,7 +65,7 @@ void intInit() {
   Wire.endTransmission(true);
 }
 
-bool readIntStatus() {
+bool accReadIntStatus() {
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x3A);  // Tell it to look at this address
   Wire.endTransmission(false);

@@ -48,8 +48,8 @@ ButtonDebounce button(INTERRUPT_PIN, 25);
 Acc3D Acc3D_Board1;
 
 void setup() {
-  iicInit();
-  intInit();
+  accInit();
+  accIntInit();
   interrupts();
   pinMode(INTERRUPT_PIN, INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), brakeLightsHigh, FALLING);
@@ -65,12 +65,31 @@ void setup() {
 
 void loop() {
   underglowTracer(0.1f);
-  Acc3D_Board1 = iicUpdate();
-  Serial.println(Acc3D_Board1.AccVectorSum);
+//  if (accReadIntStatus()) {
+//    Acc3D_Board1 = accUpdate();
+//    Serial.print("Data ready. Time: "); Serial.println(millis());
+//    Serial.println(Acc3D_Board1.AccVectorSum);
+//  } else { 
+//    Serial.print("Data not ready. Time: "); Serial.println(millis());
+//  }
 }
 
-// Do we need this garbage or can i obliterate it
-// alternatively we could put them in the effects library
+
+void integrateAcc() {
+  static int elapsed = millis();
+  static int velocity = 0;
+  static int oldAcc = 0;
+  int acc;
+  
+  while (!accReadIntStatus()); // Wait until data is ready
+  acc = Acc3D_Board1.AcY; // Read forward acceleration
+  elapsed = millis() - elapsed; // Calculate how long that took
+
+  // Now we calculate the area (integrate)
+  // Trapezoidal approximation [A = (a+b)*h/2]
+  velocity += ((acc+oldAcc)/2)*elapsed;
+  oldAcc = acc;
+}
 
 // Some functions of our own for creating animated effects -----------------
 
@@ -237,6 +256,8 @@ void headLights(float brightness) {
 void underglowTracer(float brightness) {
   static int colour1Target = UNDERGLOW_START+UNDERGLOW_TRAIL_LENGTH;
   static int colour2Target = UNDERGLOW_START-UNDERGLOW_TRAIL_LENGTH;
+  static uint16_t glowHue = 0; // hue represented by a 16 bit uint so that it will gracefully overflow into the same colour
+  glowHue += 1000; // this line is just for demonstration, replace it with whatever we're using to control the hue
 
   clearUnderglowLights();
   
@@ -244,10 +265,12 @@ void underglowTracer(float brightness) {
     float brightnessAdjust = i / (float)UNDERGLOW_TRAIL_LENGTH;
   
     if (!isLightInPersistentLight(colour1Target-i) && colour1Target-i % LED_COUNT >= UNDERGLOW_START-LED_COUNT/2 && colour1Target-i % LED_COUNT <= UNDERGLOW_START)
-      strip.setPixelColor((colour1Target-i)%LED_COUNT, strip.Color(0, 0, 255*brightness*brightnessAdjust));
+      strip.setPixelColor((colour1Target-i)%LED_COUNT, 
+        strip.ColorHSV(glowHue, 255, 255*brightness*brightnessAdjust));
 
     if (!isLightInPersistentLight(colour2Target+i) && colour2Target+i - LED_COUNT <= UNDERGLOW_START-LED_COUNT/2 && colour2Target+i >= UNDERGLOW_START)
-      strip.setPixelColor((colour2Target+i)%LED_COUNT, strip.Color(0, 0, 255*brightness*brightnessAdjust));
+      strip.setPixelColor((colour2Target+i)%LED_COUNT, 
+        strip.ColorHSV(glowHue, 255, 255*brightness*brightnessAdjust));
   }
   colour1Target--;
   colour2Target++;
