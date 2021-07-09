@@ -1,7 +1,6 @@
 // I am WOKE
 #include <Adafruit_NeoPixel.h>
 #include <ButtonDebounce.h>
-#include <elapsedMillis.h>
 #include "Accelerometer.h"
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
@@ -15,6 +14,7 @@
 #define LED_COUNT 120
 
 // Wait time in milliseconds
+#define WAIT_TIME 25
 #define DEBOUNCE_TIME 20
 
 #define BRAKE_BEGIN 25
@@ -22,7 +22,7 @@
 #define HEADLIGHT_BEGIN 93
 #define HEADLIGHT_END 113
 
-#define INTERRUPT_PIN 14
+#define INTERRUPT_PIN 15 // brake lights freak out if this is on 14
 
 #define UNDERGLOW_START 95
 #define UNDERGLOW_TRAIL_LENGTH 16
@@ -30,8 +30,9 @@
 #define HIGHVAL 1.0f
 #define LOWVAL 0.1f
 
-elapsedMillis ledOffTime;
-unsigned int ledWaitTime;
+#define ACC_THRESHOLD 0.25d // how much to digital low pass to use
+#define ACC_G 16383.0d // The number that represents 1g of acceleration
+#define GRAVITY 9.81d // How many m/s^2 in 1g
 
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -59,45 +60,43 @@ void setup() {
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
   strip.setBrightness(255); // Set BRIGHTNESS max lmao
-  headLights(LOWVAL);
-  brakeLights(LOWVAL);
+//  headLights(LOWVAL);
+//  brakeLights(LOWVAL);
 }
 
 
 // loop() function -- runs repeatedly as long as board is on ---------------
 
 void loop() {
-  underglowTracer(0.1f);
-//  if (accReadIntStatus()) {
-//    Acc3D_Board1 = accUpdate();
-//    Serial.print("Data ready. Time: "); Serial.println(millis());
-//    Serial.println(Acc3D_Board1.AccVectorSum);
-//  } else { 
-//    Serial.print("Data not ready. Time: "); Serial.println(millis());
-//  }
-  if (ledOffTime - ledWaitTime >= 0) {
-    ledOffTime = 0;
-    underglowTracer(0.1f);
-  }
-  Acc3D_Board1 = iicUpdate();
-  Serial.println(Acc3D_Board1.AccVectorSum);
+ // underglowTracer(0.1f);
+ static uint16_t hue;
+ strip.fill(strip.ColorHSV(hue, 255, 25)); 
+ strip.show();
+ hue = (uint16_t) integrateAcc();
 }
 
 
-void integrateAcc() {
+double integrateAcc() {
   static int elapsed = millis();
-  static int velocity = 0;
-  static int oldAcc = 0;
-  int acc;
+  static double velocity = 0;
+  static double oldAcc = 0;
+  double acc;
   
   while (!accReadIntStatus()); // Wait until data is ready
-  acc = Acc3D_Board1.AcY; // Read forward acceleration
+  Acc3D_Board1 = accUpdate(); // Update object
+  acc = ((Acc3D_Board1.AcY)/ACC_G)*GRAVITY; // Read forward acceleration, convert to m/s^2
+  
+  Serial.println(acc);
+  
   elapsed = millis() - elapsed; // Calculate how long that took
 
   // Now we calculate the area (integrate)
   // Trapezoidal approximation [A = (a+b)*h/2]
-  velocity += ((acc+oldAcc)/2)*elapsed;
+  velocity += ((acc+oldAcc)/2)*elapsed/1000;
   oldAcc = acc;
+  Serial.println(velocity);
+
+  return velocity;
 }
 
 // Some functions of our own for creating animated effects -----------------
@@ -297,6 +296,7 @@ void underglowTracer(float brightness) {
     colour2Target = UNDERGLOW_START-UNDERGLOW_TRAIL_LENGTH;
     
   strip.show();
+  delay(WAIT_TIME);
 }
 
 /* clearUnderglowLights ----------------------------------------------

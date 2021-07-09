@@ -11,15 +11,22 @@ Acc3D Acc3D_Board;
 void accInit(){
   pinMode(13, OUTPUT);
   Wire.begin();
+  // POWER MANAGEMENT 1
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x6B); // PWR_MGMT_1 register
   Wire.write(0x8);  // set to 0000 1000 (wakes up the MPU-6050 and disables temperature)
   Wire.endTransmission(true);
-  
+  // POWER MANAGEMENT 2
   Wire.beginTransmission(MPU_addr);
   Wire.write(0x6C); // PWR_MGMT_2 register
   Wire.write(0x7);  // set to 0000 0111 (sets all gyros to standby)
   Wire.endTransmission(true);
+  // ACCELEROMETER CONFIG
+  Wire.beginTransmission(MPU_addr);
+  Wire.write(0x1C); // ACCEL_CONFIG
+  Wire.write(0x0);  // set to 0000 0000 (turn off self-test and set to maximum accuracy)
+  Wire.endTransmission(true);
+  
   Serial.begin(9600);
 }
 
