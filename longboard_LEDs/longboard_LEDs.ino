@@ -67,7 +67,6 @@ void setup() {
 // loop() function -- runs repeatedly as long as board is on ---------------
 
 void loop() {
-  underglowTracer(0.1f);
 //  if (accReadIntStatus()) {
 //    Acc3D_Board1 = accUpdate();
 //    Serial.print("Data ready. Time: "); Serial.println(millis());
