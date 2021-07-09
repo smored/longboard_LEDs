@@ -73,6 +73,13 @@ void loop() {
  strip.fill(strip.ColorHSV(hue, 255, 25)); 
  strip.show();
  hue = (uint16_t) integrateAcc();
+
+  if (ledOffTime - ledWaitTime >= 0) {
+    ledOffTime = 0;
+    underglowTracer(0.1f);
+  }
+  Acc3D_Board1 = iicUpdate();
+  Serial.println(Acc3D_Board1.AccVectorSum);
 }
 
 
