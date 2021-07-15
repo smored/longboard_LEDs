@@ -9,7 +9,6 @@ int16_t AcX,AcY,AcZ,Tmp,GyX,GyY,GyZ;
 Acc3D Acc3D_Board;
 
 void accInit(){
-  pinMode(13, OUTPUT);
   Wire.begin();
   // POWER MANAGEMENT 1
   Wire.beginTransmission(MPU_addr);

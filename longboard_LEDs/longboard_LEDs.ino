@@ -18,14 +18,14 @@
 #define WAIT_TIME 25
 #define DEBOUNCE_TIME 20
 
-#define BRAKE_BEGIN 25
-#define BRAKE_END 45
-#define HEADLIGHT_BEGIN 93
-#define HEADLIGHT_END 113
+#define BRAKE_BEGIN 44
+#define BRAKE_END 55
+#define HEADLIGHT_BEGIN 114
+#define HEADLIGHT_END 120
 
 #define INTERRUPT_PIN 15 // brake lights freak out if this is on 14
 
-#define UNDERGLOW_START 95
+#define UNDERGLOW_START 109
 #define UNDERGLOW_TRAIL_LENGTH 16
 
 #define HIGHVAL 1.0f
@@ -63,26 +63,36 @@ void setup() {
   strip.begin();           // INITIALIZE NeoPixel strip object (REQUIRED)
   strip.show();            // Turn OFF all pixels ASAP
   strip.setBrightness(255); // Set BRIGHTNESS max lmao
-//  headLights(LOWVAL);
-//  brakeLights(LOWVAL);
+  headLights(HIGHVAL);
+  brakeLights(LOWVAL);
 }
 
 
 // loop() function -- runs repeatedly as long as board is on ---------------
 
 void loop() {
- // underglowTracer(0.1f);
- static uint16_t hue;
- strip.fill(strip.ColorHSV(hue, 255, 25)); 
- strip.show();
- hue = (uint16_t) integrateAcc();
+// static uint16_t hue;
+// strip.fill(strip.gamma32(strip.ColorHSV(hue, 255, 140))); 
+// strip.show();
+ 
 
   if (ledOffTime - ledWaitTime >= 0) {
     ledOffTime = 0;
-    underglowTracer(0.1f);
+    underglowTracer(1.0f);
   }
 }
 
+int approach() {
+  // increase or decrease hue based on distance from previous value to current value
+  static int previous;
+  int difference;
+  Acc3D_Board1 = accUpdate();
+  difference = (Acc3D_Board1.AcY - previous);
+  previous =  Acc3D_Board1.AcY;
+
+  if (difference != 0) return (difference);
+  return -1;
+}
 
 double integrateAcc() {
   static int elapsed = millis();
@@ -100,7 +110,7 @@ double integrateAcc() {
 
   // Now we calculate the area (integrate)
   // Trapezoidal approximation [A = (a+b)*h/2]
-  velocity += ((acc+oldAcc)/2)*elapsed/1000;
+  velocity += ((acc+oldAcc)/2.0d)*((double)elapsed)/1000.0d;
   oldAcc = acc;
   Serial.println(velocity);
 
@@ -280,7 +290,7 @@ void underglowTracer(float brightness) {
   for (int i=0; i < UNDERGLOW_TRAIL_LENGTH; i++) {
     float brightnessAdjust = i / (float)UNDERGLOW_TRAIL_LENGTH;
   
-    if (!isLightInPersistentLight(colour1Target-i) && colour1Target-i % LED_COUNT >= UNDERGLOW_START-LED_COUNT/2 && colour1Target-i % LED_COUNT <= UNDERGLOW_START)
+    if (!isLightInPersistentLight(colour1Target-i) && colour1Target-i >= UNDERGLOW_START-LED_COUNT/2 && colour1Target-i <= UNDERGLOW_START)
       strip.setPixelColor((colour1Target-i)%LED_COUNT, 
         strip.ColorHSV(glowHue, 255, 255*brightness*brightnessAdjust));
 
@@ -297,7 +307,7 @@ void underglowTracer(float brightness) {
   if (colour2Target < 0)
     colour2Target += LED_COUNT;
 
-  if (colour1Target % LED_COUNT < UNDERGLOW_START-LED_COUNT/2)
+  if (colour1Target < UNDERGLOW_START-LED_COUNT/2)
     colour1Target = UNDERGLOW_START+UNDERGLOW_TRAIL_LENGTH;
 
   if (colour2Target - LED_COUNT > UNDERGLOW_START-LED_COUNT/2)
