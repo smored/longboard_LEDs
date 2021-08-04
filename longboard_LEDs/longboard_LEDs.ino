@@ -12,7 +12,7 @@
 #define LED_PIN 23
 
 // How many NeoPixels are attached to the Arduino?
-#define LED_COUNT 120
+#define LED_COUNT 137
 
 // Wait time in milliseconds
 #define WAIT_TIME 25
@@ -23,9 +23,9 @@
 #define HEADLIGHT_BEGIN 114
 #define HEADLIGHT_END 120
 
-#define INTERRUPT_PIN 15 // brake lights freak out if this is on 14
+#define INTERRUPT_PIN 0 // brake lights freak out if this is on 14
 
-#define UNDERGLOW_START 109
+#define UNDERGLOW_START 117
 #define UNDERGLOW_TRAIL_LENGTH 16
 
 #define HIGHVAL 1.0f
@@ -34,6 +34,9 @@
 #define ACC_THRESHOLD 0.25d // how much to digital low pass to use
 #define ACC_G 16383.0d // The number that represents 1g of acceleration
 #define GRAVITY 9.81d // How many m/s^2 in 1g
+
+#define VOLT_PIN 15 // voltage measurement pin
+#define VOLT_CONVERT 7.8*(3.3/1023) // convert read value into a voltage
 
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -65,17 +68,42 @@ void setup() {
   strip.setBrightness(255); // Set BRIGHTNESS max lmao
   headLights(HIGHVAL);
   brakeLights(LOWVAL);
+  pinMode(VOLT_PIN, INPUT_PULLDOWN);
 }
 
 
 // loop() function -- runs repeatedly as long as board is on ---------------
 
 void loop() {
-// static uint16_t hue;
-// strip.fill(strip.gamma32(strip.ColorHSV(hue, 255, 140))); 
-// strip.show();
- 
+  static float maxV;
+  static float minV = 999;
+  static float avgV;
+  float vNow;
+  vNow = readVoltage();
 
+  if (vNow > maxV) {
+    maxV = vNow;
+  } else if (vNow < minV) {
+    minV = vNow;
+  }
+
+  avgV += vNow;
+  avgV /= 2;
+
+  Serial.print("Max Voltage: ");
+  Serial.print(maxV);
+  Serial.println();
+  Serial.print("Min Voltage: ");
+  Serial.print(minV);
+  Serial.println();
+  Serial.print("Avg Voltage: ");
+  Serial.print(avgV);
+  Serial.println();
+  
+  Serial.println();
+  strip.setPixelColor(136, strip.ColorHSV((readVoltage()-18)*9102, 255, 255));
+  strip.show();
+  
   if (ledOffTime - ledWaitTime >= 0) {
     ledOffTime = 0;
     underglowTracer(1.0f);
@@ -334,4 +362,9 @@ void clearUnderglowLights() {
 bool isLightInPersistentLight(int led) {
   led %= LED_COUNT;
   return (led >= BRAKE_BEGIN && led < BRAKE_END) || (led >= HEADLIGHT_BEGIN && led < HEADLIGHT_END);
+}
+
+float readVoltage() {
+  return (analogRead(VOLT_PIN)*VOLT_CONVERT);
+
 }
