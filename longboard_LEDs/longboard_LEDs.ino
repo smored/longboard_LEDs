@@ -3,6 +3,7 @@
 #include <ButtonDebounce.h>
 #include <elapsedMillis.h>
 #include "Accelerometer.h"
+#include <TM1637.h>
 #ifdef __AVR__
  #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
 #endif
@@ -12,7 +13,7 @@
 #define LED_PIN 23
 
 // How many NeoPixels are attached to the Arduino?
-#define LED_COUNT 137
+#define LED_COUNT 136
 
 // Wait time in milliseconds
 #define WAIT_TIME 25
@@ -37,6 +38,10 @@
 
 #define VOLT_PIN 15 // voltage measurement pin
 #define VOLT_CONVERT 7.8*(3.3/1023) // convert read value into a voltage
+
+#define CLK_7SEG 3
+#define DIO_7SEG 2
+TM1637 tm(CLK_7SEG, DIO_7SEG); // instiantiate 7 segment object
 
 // Declare our NeoPixel strip object:
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
@@ -69,40 +74,18 @@ void setup() {
   headLights(HIGHVAL);
   brakeLights(LOWVAL);
   pinMode(VOLT_PIN, INPUT_PULLDOWN);
+
+  // initialize 7 segment 
+  tm.begin();
+  tm.setBrightness(4);
 }
 
 
 // loop() function -- runs repeatedly as long as board is on ---------------
 
 void loop() {
-  static float maxV;
-  static float minV = 999;
-  static float avgV;
-  float vNow;
-  vNow = readVoltage();
-
-  if (vNow > maxV) {
-    maxV = vNow;
-  } else if (vNow < minV) {
-    minV = vNow;
-  }
-
-  avgV += vNow;
-  avgV /= 2;
-
-  Serial.print("Max Voltage: ");
-  Serial.print(maxV);
-  Serial.println();
-  Serial.print("Min Voltage: ");
-  Serial.print(minV);
-  Serial.println();
-  Serial.print("Avg Voltage: ");
-  Serial.print(avgV);
-  Serial.println();
-  
-  Serial.println();
-  strip.setPixelColor(136, strip.ColorHSV((readVoltage()-18)*9102, 255, 255));
-  strip.show();
+  // Display voltage readout on 7 segment
+  tm.display(readVoltage());
   
   if (ledOffTime - ledWaitTime >= 0) {
     ledOffTime = 0;
